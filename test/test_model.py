@@ -14,6 +14,7 @@ class TestModel(unittest.TestCase):
         test_model = Model()
         test_model.append_layer(Dense(node_count=10, input_length=100))
         self.assertEqual(test_model.depth, 1)
+        self.assertEqual(test_model.input_length, 100)
 
         self.assertRaises(
             ValueError,
@@ -43,3 +44,15 @@ class TestModel(unittest.TestCase):
             node_count=100, input_length=1000
         ))
         self.assertEqual(test_model.input_length, 1000)
+
+    def test_calculate_loss(self):
+        test_model = Model()
+        test_model.append_layer(Dense(input_length=100, node_count=1))
+        test_input = np.random.random_sample((3, 100))
+        test_label = np.random.random_sample((3, 1))
+        loss = test_model._calculate_loss(test_input, test_label)
+
+        test_output = test_model(test_input)
+        test_squared_error = np.square(test_label - test_output)
+        expected_loss = np.mean(test_squared_error)
+        self.assertEqual(loss, expected_loss)

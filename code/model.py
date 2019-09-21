@@ -1,6 +1,7 @@
 from typing import List
 
 from code.layers import Dense
+import numpy as np
 
 
 class Model(object):
@@ -65,3 +66,8 @@ class Model(object):
         if len(self.layers) == 0:
             return 0
         return self.layers[0].input_length
+
+    def _calculate_loss(self, input_matrix, label_array):
+        model_output = self(input_matrix)
+        squared_error = np.square(model_output - label_array)
+        return np.mean(squared_error)
