@@ -1,9 +1,15 @@
 import unittest
 
-from code.dense import *
+import numpy as np
+
+from code.dense import Dense
 
 
 class TestDense(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.test_layer = Dense(node_count=10, input_length=100)
+
     def test_dense_init(self):
         default_layer = Dense()
         self.assertRaises(ValueError, Dense, input_length=0)
@@ -28,5 +34,24 @@ class TestDense(unittest.TestCase):
         self.assertEqual(upscale_layer.output_shape, (1, 1000))
 
     def test_dense_weights(self):
-        test_layer = Dense(node_count=7, input_length=10)
-        self.assertEqual(test_layer.weights.shape, (10, 7))
+        self.assertEqual(self.test_layer.weights.shape, (100, 10))
+
+    def test_verify_input_shape(self):
+        self.test_layer._verify_input_shape(np.ndarray((1, 100)))
+        self.assertRaises(
+            ValueError, self.test_layer._verify_input_shape,
+            np.array([1,2,3])
+        )
+
+    def test_call_layer(self):
+        test_input = np.random.random_sample((10, 100))
+
+        np.testing.assert_array_equal(
+            self.test_layer(test_input),
+            test_input @ self.test_layer.weights
+        )
+
+        self.assertRaises(
+            ValueError,
+            self.test_layer, np.array((1, 1))
+        )

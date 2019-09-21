@@ -14,9 +14,28 @@ class Dense(object):
                 "Invalid value for number of nodes, expected at least 1"
             )
         self._node_count = node_count
-        self._weights = np.ndarray(
-            (self.input_length, self.node_count), dtype=np.float32
+        self._weights = np.random.random_sample(
+            (self.input_length, self.node_count)
         )
+
+    def _verify_input_shape(self, input_matrix):
+        matrix_shape = input_matrix.shape
+        if len(matrix_shape) != 2:
+            raise ValueError(
+                "Dense layers can only process 2D matrices"
+            )
+
+        if matrix_shape[-1] != self.input_length:
+            raise ValueError(
+                "Expected {} features, got {} instead".format(
+                    self.input_length, matrix_shape[-1]
+                )
+            )
+
+    def __call__(self, input_matrix):
+        self._verify_input_shape(input_matrix)
+
+        return np.matmul(input_matrix, self.weights)
 
     @property
     def node_count(self):
