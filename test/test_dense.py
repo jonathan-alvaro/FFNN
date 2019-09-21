@@ -36,13 +36,6 @@ class TestDense(unittest.TestCase):
     def test_dense_weights(self):
         self.assertEqual(self.test_layer.weights.shape, (100, 10))
 
-    def test_verify_input_shape(self):
-        self.test_layer._verify_input_shape(np.ndarray((1, 100)))
-        self.assertRaises(
-            ValueError, self.test_layer._verify_input_shape,
-            np.array([1,2,3])
-        )
-
     def test_call_layer(self):
         test_input = np.random.random_sample((10, 100))
 
