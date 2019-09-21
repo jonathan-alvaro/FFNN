@@ -1,13 +1,37 @@
+from abc import abstractmethod
+
 import numpy as np
 
 
-class Dense(object):
-    def __init__(self, node_count: int = 1, input_length: int = 1):
+class Layer(object):
+    def __init__(self, input_length: int = 1):
         if input_length <= 0:
             raise ValueError(
                 "Invalid input array length, expected at least 1"
             )
         self._input_length = input_length
+
+    @abstractmethod
+    def __call__(self, input_matrix):
+        pass
+
+    @abstractmethod
+    def _verify_input_shape(self, input_matrix):
+        pass
+
+    @property
+    def input_length(self):
+        return self._input_length
+
+    @abstractmethod
+    @property
+    def output_shape(self):
+        pass
+
+
+class Dense(Layer):
+    def __init__(self, node_count: int = 1, input_length: int = 1):
+        super().__init__(input_length=input_length)
 
         if node_count <= 0:
             raise ValueError(
@@ -42,13 +66,29 @@ class Dense(object):
         return self._node_count
 
     @property
-    def input_length(self):
-        return self._input_length
-
-    @property
     def output_shape(self):
-        return (1, self.node_count)
+        return 1, self.node_count
 
     @property
     def weights(self):
         return self._weights
+
+
+class Sigmoid(Layer):
+    def __init__(self, input_length: int = 1):
+        super().__init__(input_length=input_length)
+
+    def _verify_input_shape(self, input_matrix):
+        if input_matrix.shape[-1] != self.input_length:
+            raise ValueError(
+                (
+                    "Expected arrays with {} features, "
+                    "got one of shape {} instead"
+                ).format(self.input_length, input_matrix.shape)
+            )
+
+    def __call__(self, input_matrix):
+        return 1 / (1 + np.exp(-input_matrix))
+
+    def output_shape(self):
+        return 1, self.input_length

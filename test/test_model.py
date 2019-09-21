@@ -2,7 +2,7 @@ import unittest
 
 import numpy as np
 
-from code.dense import Dense
+from code.layers import Dense
 from code.model import Model
 
 
