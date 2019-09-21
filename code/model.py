@@ -1,6 +1,6 @@
 from typing import List
 
-from code.dense import Dense
+from code.layers import Dense
 
 
 class Model(object):

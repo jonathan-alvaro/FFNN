@@ -1,1 +1,1 @@
-all = ['test_dense', 'test_model']
+all = ['test_dense', 'test_model', 'test_sigmoid']
