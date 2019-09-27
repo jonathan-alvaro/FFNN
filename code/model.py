@@ -1,5 +1,7 @@
 from typing import List
 
+import numpy as np
+
 from code.layers import Dense
 
 
@@ -65,3 +67,7 @@ class Model(object):
         if len(self.layers) == 0:
             return 0
         return self.layers[0].input_length
+
+    def cost_fn(self, x, y):
+        output = self(x)
+        return np.mean(np.power(output - y, 2) / 2)

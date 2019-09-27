@@ -23,7 +23,6 @@ class Layer(object):
     def input_length(self):
         return self._input_length
 
-    @abstractmethod
     @property
     def output_shape(self):
         pass
@@ -92,3 +91,28 @@ class Sigmoid(Layer):
 
     def output_shape(self):
         return 1, self.input_length
+
+    def derived_fn(self, input_matrix):
+        activated_input = self(input_matrix)
+        return activated_input * (1 - activated_input)
+
+
+class DenseBlock(object):
+
+    def __init__(self, input_length=1, node_count=1):
+        self._dense = Dense(
+            node_count=node_count, input_length=input_length
+        )
+        self._activation = Sigmoid(input_length=input_length)
+
+    @property
+    def weights(self):
+        return self._dense.weights
+
+    def __call__(self, input_matrix):
+        weighted_input = self._dense(input_matrix)
+        return self._activation(weighted_input)
+
+    def derived_activation_fn(self, input_matrix):
+        weighted_input = self._dense(input_matrix)
+        return self._activation.derived_fn(weighted_input)

@@ -43,3 +43,16 @@ class TestModel(unittest.TestCase):
             node_count=100, input_length=1000
         ))
         self.assertEqual(test_model.input_length, 1000)
+
+    def test_cost_fn(self):
+        test_model = Model()
+        test_model.append_layer(Dense(
+            node_count=1, input_length=1000
+        ))
+
+        test_input = np.random.random_sample((1000, 1000))
+        test_label = np.random.random_sample((1000, 1))
+        output = test_model(test_input)
+        expected_cost = np.mean(np.power(output - test_label, 2) / 2)
+        cost = np.mean(test_model.cost_fn(test_input, test_label))
+        self.assertEqual(cost, expected_cost)
