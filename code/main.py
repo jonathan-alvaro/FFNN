@@ -1,12 +1,13 @@
 import os
+from math import ceil
 
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 
-from optimizer import GradientDescentOptimizer
 from layers import Dense, Sigmoid
 from model import Model
+from optimizer import GradientDescentOptimizer
 
 
 def load_data():
@@ -28,6 +29,7 @@ def load_data():
     y = data[data.columns[-1]].values.reshape(-1, 1)
     return X, y
 
+
 def create_model(hidden_layer, nb_nodes):
     if hidden_layer <= 0:
         raise ValueError("Model needs at least 1 hidden layer")
@@ -46,13 +48,19 @@ def create_model(hidden_layer, nb_nodes):
 
     return model
 
-X, y = load_data()
-model = create_model(2, [5, 1])
 
-for i in range(10000):
-    if i % 1000 == 0:
-        print("Accuracy:", ((model(X) > 0.5).astype(int) == y).sum() / len(X))
-    optimizer = GradientDescentOptimizer(learning_rate=0.003)
-    optimizer.optimize_model(model, X, y)
+def train_model(model, optimizer, X, y, batch_size, epoch):
+    batch_count = len(X) / batch_size
 
-print("Accuracy:", ((model(X) > 0.5).astype(int) == y).sum() / len(X))
+    for i in range(epoch):
+        for j in range(ceil(batch_count)):
+            if j != (ceil(batch_count) - 1):
+                batch_X = X[j*batch_size:(j+1)*batch_size]
+                batch_y = y[j*batch_size:(j+1)*batch_size]
+            else:
+                batch_X = X[j * batch_size:]
+                batch_y = y[j * batch_size:]
+
+        optimizer.optimize_model(model)
+
+    return model
