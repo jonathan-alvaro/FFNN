@@ -1,3 +1,4 @@
+from math import log
 from typing import List
 
 import numpy as np
@@ -70,4 +71,13 @@ class Model(object):
 
     def cost_fn(self, x, y):
         output = self(x)
-        return np.mean(np.power(output - y, 2) / 2)
+        cost = 0
+        for label, pred in zip(y, output):
+            try:
+                if label == 1:
+                    cost += log(pred)
+                else:
+                    cost += log(1 - pred)
+            except ValueError:
+                cost += 100
+        return cost / len(y)

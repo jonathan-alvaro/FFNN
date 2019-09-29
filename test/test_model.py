@@ -1,4 +1,5 @@
 import unittest
+from math import log
 
 import numpy as np
 
@@ -51,8 +52,17 @@ class TestModel(unittest.TestCase):
         ))
 
         test_input = np.random.random_sample((1000, 1000))
-        test_label = np.random.random_sample((1000, 1))
+        test_label = np.random.randint(0, 2, (1000, 1))
         output = test_model(test_input)
-        expected_cost = np.mean(np.power(output - test_label, 2) / 2)
+        expected_cost = 0
+        for label, pred in zip(test_label, output):
+            try:
+                if label == 1:
+                    expected_cost += log(pred)
+                else:
+                    expected_cost += log(1 - pred)
+            except ValueError:
+                expected_cost += 100
+        expected_cost /= len(test_label)
         cost = np.mean(test_model.cost_fn(test_input, test_label))
         self.assertEqual(cost, expected_cost)
