@@ -23,8 +23,8 @@ class Layer(object):
     def input_length(self):
         return self._input_length
 
-    @abstractmethod
     @property
+    @abstractmethod
     def output_shape(self):
         pass
 
@@ -41,13 +41,10 @@ class Dense(Layer):
         self._weights = np.random.random_sample(
             (self.input_length, self.node_count)
         )
+        self._current_output = []
 
     def _verify_input_shape(self, input_matrix):
         matrix_shape = input_matrix.shape
-        if len(matrix_shape) != 2:
-            raise ValueError(
-                "Dense layers can only process 2D matrices"
-            )
 
         if matrix_shape[-1] != self.input_length:
             raise ValueError(
@@ -56,10 +53,33 @@ class Dense(Layer):
                 )
             )
 
+    def _sigmoid(self, z, derivative=False):
+        if derivative:
+            return np.multiply(z, (1-z))
+        else:
+            return 1 / (1 + np.exp(-z))
+
     def __call__(self, input_matrix):
         self._verify_input_shape(input_matrix)
+        self._current_output = np.matmul(input_matrix, self.weights)
+        for i, row in enumerate(self._current_output):
+            for j, val in enumerate(row):
+                self._current_output[i, j] = self._sigmoid(
+                    self._current_output[i, j])
+        return self._current_output
 
-        return np.matmul(input_matrix, self.weights)
+    def _gradient(self, X, y):
+        pred = self(X)
+        grad = X.T.dot(pred - y)
+        return grad
+
+    def backpropagate(self, prev_error):
+        gradient = self._gradient()
+        delta = self._momentum * gradient + self._learning_rate * gradient
+
+        next_error = delta.dot(self._weights.T)
+        self._weights = self._weights + delta
+        return next_error
 
     @property
     def node_count(self):
@@ -72,23 +92,3 @@ class Dense(Layer):
     @property
     def weights(self):
         return self._weights
-
-
-class Sigmoid(Layer):
-    def __init__(self, input_length: int = 1):
-        super().__init__(input_length=input_length)
-
-    def _verify_input_shape(self, input_matrix):
-        if input_matrix.shape[-1] != self.input_length:
-            raise ValueError(
-                (
-                    "Expected arrays with {} features, "
-                    "got one of shape {} instead"
-                ).format(self.input_length, input_matrix.shape)
-            )
-
-    def __call__(self, input_matrix):
-        return 1 / (1 + np.exp(-input_matrix))
-
-    def output_shape(self):
-        return 1, self.input_length
