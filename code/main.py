@@ -61,6 +61,11 @@ def train_model(model, optimizer, X, y, batch_size, epoch):
                 batch_X = X[j * batch_size:]
                 batch_y = y[j * batch_size:]
 
-        optimizer.optimize_model(model)
+        optimizer.optimize_model(model, batch_X, batch_y)
 
     return model
+
+model = create_model(2, [3, 1])
+optimizer = GradientDescentOptimizer(learning_rate=0.01, momentum=0.001)
+X, y = load_data()
+model = train_model(model, optimizer, X, y, 5, 10)
