@@ -1,12 +1,14 @@
 from typing import List
 
-from code.layers import Dense
+from layers import Dense
 import numpy as np
 
 
 class Model(object):
-    def __init__(self):
+    def __init__(self, learning_rate=0.9, momentum=0):
         self._layers = []
+        self._learning_rate = learning_rate
+        self._momentum = momentum
 
     def _verify_input(self, input_matrix):
         if len(input_matrix.shape) != 2:
@@ -71,3 +73,16 @@ class Model(object):
         model_output = self(input_matrix)
         squared_error = np.square(model_output - label_array)
         return np.mean(squared_error)
+
+    def fit(self, X, y):
+        self._verify_input(X)
+
+        o = []
+        o.append(X)
+        for i, layer in enumerate(self.layers):
+            o.append(layer(o[i]))
+
+        error = self._calculate_loss(o, y)
+
+        for layer in reversed(self.layers):
+            error = layer.backpropagate(error)
