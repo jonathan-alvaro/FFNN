@@ -1,9 +1,7 @@
 from math import log
 from typing import List
 
-import numpy as np
-
-from code.layers import Dense
+from layers import Dense, Sigmoid
 
 
 class Model(object):
@@ -37,7 +35,10 @@ class Model(object):
         return output
 
     def _verify_new_layer(self, new_layer, prev_layer):
-        prev_layer = self.layers[-1]
+
+        if type(new_layer) == Sigmoid:
+            return
+
         if new_layer.input_length != prev_layer.node_count:
             raise ValueError(
                 (
@@ -46,9 +47,12 @@ class Model(object):
                 ).format(prev_layer.node_count, new_layer.input_length)
             )
 
-    def append_layer(self, new_layer: Dense):
+    def append_layer(self, new_layer):
         if len(self.layers) > 0:
-            self._verify_new_layer(new_layer, self.layers[-1])
+            prev_layer = self.layers[-1]
+            if type(prev_layer) == Sigmoid:
+                prev_layer = self.layers[-2]
+            self._verify_new_layer(new_layer, prev_layer)
         self._layers.append(new_layer)
 
     @property

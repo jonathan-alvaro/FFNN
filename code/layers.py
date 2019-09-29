@@ -31,6 +31,8 @@ class Layer(object):
 class Dense(Layer):
     def __init__(self, node_count: int = 1, input_length: int = 1):
         super().__init__(input_length=input_length)
+        self._prev_input = None
+        self._prev_weights = None
 
         if node_count <= 0:
             raise ValueError(
@@ -57,6 +59,7 @@ class Dense(Layer):
 
     def __call__(self, input_matrix):
         self._verify_input_shape(input_matrix)
+        self._prev_input = input_matrix
 
         return np.matmul(input_matrix, self.weights)
 
@@ -71,6 +74,23 @@ class Dense(Layer):
     @property
     def weights(self):
         return self._weights
+
+    @weights.setter
+    def weights(self, new_weights):
+        self.prev_weights = self.weights
+        self._weights = new_weights
+
+    @property
+    def prev_input(self):
+        return self._prev_input
+
+    @property
+    def prev_weights(self):
+        return self._prev_weights
+
+    @prev_weights.setter
+    def prev_weights(self, new_prev_weights):
+        self._prev_weights = new_prev_weights
 
 
 class Sigmoid(Layer):
@@ -87,7 +107,13 @@ class Sigmoid(Layer):
             )
 
     def __call__(self, input_matrix):
-        return 1 / (1 + np.exp(-input_matrix))
+        original_shape = input_matrix.shape
+        exponent = np.exp(-input_matrix).flatten()
+        for i in range(len(exponent)):
+            if exponent[i] - 0 <= 1E-6:
+                exponent[i] = 0
+        exponent = exponent.reshape(original_shape)
+        return 1 / (1 + exponent)
 
     def output_shape(self):
         return 1, self.input_length
