@@ -5,8 +5,10 @@ from layers import Dense, Sigmoid
 
 
 class Model(object):
-    def __init__(self):
+    def __init__(self, learning_rate=0.9, momentum=0):
         self._layers = []
+        self._learning_rate = learning_rate
+        self._momentum = momentum
 
     def _verify_input(self, input_matrix):
         if len(input_matrix.shape) != 2:

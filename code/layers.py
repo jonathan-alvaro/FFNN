@@ -24,6 +24,7 @@ class Layer(object):
         return self._input_length
 
     @property
+    @abstractmethod
     def output_shape(self):
         pass
 
@@ -42,13 +43,10 @@ class Dense(Layer):
         self._weights = np.random.random_sample(
             (self.input_length, self.node_count)
         )
+        self._current_output = []
 
     def _verify_input_shape(self, input_matrix):
         matrix_shape = input_matrix.shape
-        if len(matrix_shape) != 2:
-            raise ValueError(
-                "Dense layers can only process 2D matrices"
-            )
 
         if matrix_shape[-1] != self.input_length:
             raise ValueError(
@@ -56,6 +54,12 @@ class Dense(Layer):
                     self.input_length, matrix_shape[-1]
                 )
             )
+
+    def _sigmoid(self, z, derivative=False):
+        if derivative:
+            return np.multiply(z, (1-z))
+        else:
+            return 1 / (1 + np.exp(-z))
 
     def __call__(self, input_matrix):
         self._verify_input_shape(input_matrix)
@@ -74,7 +78,7 @@ class Dense(Layer):
     @property
     def weights(self):
         return self._weights
-
+      
     @weights.setter
     def weights(self, new_weights):
         self.prev_weights = self.weights

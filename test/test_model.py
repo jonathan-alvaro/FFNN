@@ -15,6 +15,7 @@ class TestModel(unittest.TestCase):
         test_model = Model()
         test_model.append_layer(Dense(node_count=10, input_length=100))
         self.assertEqual(test_model.depth, 1)
+        self.assertEqual(test_model.input_length, 100)
 
         self.assertRaises(
             ValueError,
