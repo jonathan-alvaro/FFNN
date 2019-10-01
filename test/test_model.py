@@ -1,4 +1,5 @@
 import unittest
+from math import log
 
 import numpy as np
 
@@ -45,14 +46,24 @@ class TestModel(unittest.TestCase):
         ))
         self.assertEqual(test_model.input_length, 1000)
 
-    def test_calculate_loss(self):
+    def test_cost_fn(self):
         test_model = Model()
-        test_model.append_layer(Dense(input_length=100, node_count=1))
-        test_input = np.random.random_sample((3, 100))
-        test_label = np.random.random_sample((3, 1))
-        loss = test_model._calculate_loss(test_input, test_label)
+        test_model.append_layer(Dense(
+            node_count=1, input_length=1000
+        ))
 
-        test_output = test_model(test_input)
-        test_squared_error = np.square(test_label - test_output)
-        expected_loss = np.mean(test_squared_error)
-        self.assertEqual(loss, expected_loss)
+        test_input = np.random.random_sample((1000, 1000))
+        test_label = np.random.randint(0, 2, (1000, 1))
+        output = test_model(test_input)
+        expected_cost = 0
+        for label, pred in zip(test_label, output):
+            try:
+                if label == 1:
+                    expected_cost += log(pred)
+                else:
+                    expected_cost += log(1 - pred)
+            except ValueError:
+                expected_cost += 100
+        expected_cost /= len(test_label)
+        cost = np.mean(test_model.cost_fn(test_input, test_label))
+        self.assertEqual(cost, expected_cost)

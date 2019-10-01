@@ -2,7 +2,7 @@ import unittest
 
 import numpy as np
 
-from code.layers import Dense
+from code.layers import Dense, DenseBlock
 
 
 class TestDense(unittest.TestCase):
@@ -47,4 +47,33 @@ class TestDense(unittest.TestCase):
         self.assertRaises(
             ValueError,
             self.test_layer, np.array((1, 1))
+        )
+
+
+class TestDenseBlock(unittest.TestCase):
+    def test_init(self):
+        test_block = DenseBlock(node_count=10, input_length=100)
+
+    def test_call(self):
+        test_block = DenseBlock(node_count=10, input_length=100)
+        weights = test_block.weights
+
+        test_input = np.random.random_sample((100, 100))
+        expected_output = 1 / (1 + np.exp(-(test_input @ weights)))
+        np.testing.assert_array_equal(
+            test_block(test_input), expected_output
+        )
+
+    def test_derived_activation_fn(self):
+        test_block = DenseBlock(node_count=1, input_length=100)
+        test_input = np.random.random_sample((100, 100))
+
+        weighted_input = test_input @ test_block._dense.weights
+        activated_input = test_block._activation.derived_fn(
+            weighted_input
+        )
+        expected_output = activated_input * (1 - activated_input)
+        output = test_block.derived_activation_fn(test_input)
+        np.testing.assert_array_almost_equal(
+            output, expected_output
         )

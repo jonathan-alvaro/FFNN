@@ -1,7 +1,7 @@
+from math import log
 from typing import List
 
-from layers import Dense
-import numpy as np
+from layers import Dense, Sigmoid
 
 
 class Model(object):
@@ -37,7 +37,10 @@ class Model(object):
         return output
 
     def _verify_new_layer(self, new_layer, prev_layer):
-        prev_layer = self.layers[-1]
+
+        if type(new_layer) == Sigmoid:
+            return
+
         if new_layer.input_length != prev_layer.node_count:
             raise ValueError(
                 (
@@ -46,9 +49,12 @@ class Model(object):
                 ).format(prev_layer.node_count, new_layer.input_length)
             )
 
-    def append_layer(self, new_layer: Dense):
+    def append_layer(self, new_layer):
         if len(self.layers) > 0:
-            self._verify_new_layer(new_layer, self.layers[-1])
+            prev_layer = self.layers[-1]
+            if type(prev_layer) == Sigmoid:
+                prev_layer = self.layers[-2]
+            self._verify_new_layer(new_layer, prev_layer)
         self._layers.append(new_layer)
 
     @property
@@ -69,20 +75,15 @@ class Model(object):
             return 0
         return self.layers[0].input_length
 
-    def _calculate_loss(self, input_matrix, label_array):
-        model_output = self(input_matrix)
-        squared_error = np.square(model_output - label_array)
-        return np.mean(squared_error)
-
-    def fit(self, X, y):
-        self._verify_input(X)
-
-        o = []
-        o.append(X)
-        for i, layer in enumerate(self.layers):
-            o.append(layer(o[i]))
-
-        error = self._calculate_loss(o, y)
-
-        for layer in reversed(self.layers):
-            error = layer.backpropagate(error)
+    def cost_fn(self, x, y):
+        output = self(x)
+        cost = 0
+        for label, pred in zip(y, output):
+            try:
+                if label == 1:
+                    cost += log(pred)
+                else:
+                    cost += log(1 - pred)
+            except ValueError:
+                cost += 100
+        return cost / len(y)
